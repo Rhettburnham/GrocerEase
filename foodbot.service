@@ -1,0 +1,16 @@
+[Unit]
+Description=FoodBot - Food Weighing and Identification Robot
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/Grocery
+ExecStart=/home/pi/Grocery/venv/bin/python /home/pi/Grocery/backend/main.py
+Environment=PYTHONUNBUFFERED=1
+Environment=OPENAI_API_KEY=your_openai_api_key_here
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target 

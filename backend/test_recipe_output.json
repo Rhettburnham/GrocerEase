@@ -1,0 +1,23 @@
+{
+  "name": "Grilled Chicken and Quinoa Salad",
+  "introduction": "This Grilled Chicken and Quinoa Salad is a highly nutritious and delicious dish packed with lean proteins from the chicken, the goodness of quinoa, and vitamins from the broccoli and avocado. It's a perfect meal for those who seek a healthy, balanced diet.",
+  "prepTime": "20 minutes",
+  "cookTime": "30 minutes",
+  "servings": "1",
+  "ingredients": [
+    "122.85g of Chicken Breast",
+    "93.75g of Quinoa",
+    "78.15g of Broccoli",
+    "100.9g of Avocado"
+  ],
+  "instructions": [
+    "Step 1: Rinse the quinoa under cold water until the water runs clear. Cook it according to the package instructions, then let it cool.",
+    "Step 2: While the quinoa is cooking, season the chicken breast with salt and pepper. Grill it on medium heat for about 5-7 minutes each side or until it's fully cooked.",
+    "Step 3: While the chicken is grilling, steam the broccoli until it's tender but still has a crunch.",
+    "Step 4: Cut the grilled chicken into slices and the avocado into cubes.",
+    "Step 5: In a large bowl, mix together the cooked quinoa, grilled chicken, steamed broccoli, and cubed avocado. Toss until everything is well mixed.",
+    "Step 6: You can add your favorite dressing or leave it as is. Serve immediately."
+  ],
+  "nutritionalInfo": "Approximately 530 calories, 40g protein, 40g carbs, 20g fat per serving",
+  "tips": "For added flavor, you can marinate the chicken before grilling. Possible marinades can include lemon juice, garlic, and herbs. For a vegan option, replace the chicken with tofu or chickpeas."
+}
