@@ -1,14 +1,14 @@
 import os
 import json
 import re
-from openai import OpenAI
+import openai
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Hardcoded API key for prototype
-API_KEY = "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"
+API_KEY = "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"
 
 class RecipeSuggestor:
     def __init__(self, api_key=None):
@@ -21,8 +21,8 @@ class RecipeSuggestor:
         # Hardcoded API key for prototype
         self.api_key = API_KEY
         
-        # Initialize the OpenAI client
-        self.client = OpenAI(api_key=self.api_key)
+        # Set OpenAI API key directly
+        openai.api_key = self.api_key
         
         # Get model from environment or use default
         self.model = os.environ.get("OPENAI_MODEL", "gpt-4")
@@ -77,7 +77,7 @@ Ensure the output is ONLY the JSON array, nothing before or after. Use the avail
         
         # Call the OpenAI API using the client
         try:
-            response = self.client.chat.completions.create(
+            response = openai.ChatCompletion.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a creative chef specialized in generating detailed recipes based on available ingredients."}, # Updated system message

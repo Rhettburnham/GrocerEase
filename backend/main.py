@@ -3,14 +3,13 @@ import time
 import json
 import base64
 import openai
-from openai import OpenAI
 import RPi.GPIO as GPIO
 from hx711 import HX711
 from mimetypes import guess_type
 from statistics import mode, StatisticsError
 
-# Set your OpenAI API key
-client = OpenAI(api_key="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")
+# Set your OpenAI API key directly
+openai.api_key = "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"
 
 # --- Capture Image ---
 def capture_image(filename="capture.jpg"):
@@ -30,8 +29,8 @@ def encode_image_to_data_url(image_path):
 # --- Identify Food ---
 def identify_food(image_path):
     data_url = encode_image_to_data_url(image_path)
-    response = client.chat.completions.create(
-        model="gpt-4o",
+    response = openai.ChatCompletion.create(
+        model="gpt-4-vision-preview",
         messages=[
             {
                 "role": "user",
