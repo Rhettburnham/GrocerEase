@@ -9,7 +9,7 @@ from mimetypes import guess_type
 from statistics import mode, StatisticsError
 
 # Set your OpenAI API key
-openai.api_key = "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"
+openai.api_key = "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"
 
 # --- Capture Image ---
 def capture_image(filename="capture.jpg"):
