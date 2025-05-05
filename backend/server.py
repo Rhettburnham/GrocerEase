@@ -61,34 +61,86 @@ def run_capture_process(num_items=7):
         if platform.system() == 'Darwin':
             # On Mac, use the demo script
             script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'main_demo.py')
+            
+            # Run the script and capture output
+            process = subprocess.Popen(
+                [sys.executable, script_path],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+            )
+            
+            # Simulate pressing 'y' num_items times
+            for _ in range(num_items):
+                try:
+                    process.stdin.write('y\n')
+                    process.stdin.flush()
+                    # Wait a bit between captures
+                    time.sleep(3)
+                except BrokenPipeError:
+                    print("Broken pipe while writing to process")
+                    break
+            
+            # Send 'q' to quit
+            try:
+                process.stdin.write('q\n')
+                process.stdin.flush()
+            except BrokenPipeError:
+                print("Broken pipe while quitting process")
+            
+            # Wait for process to finish
+            process.wait()
         else:
-            # On Raspberry Pi, use the real script
-            script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'main.py')
-        
-        # Run the script and capture output
-        process = subprocess.Popen(
-            [sys.executable, script_path],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1,
-        )
-        
-        # Simulate pressing 'y' num_items times
-        for _ in range(num_items):
-            process.stdin.write('y\n')
-            process.stdin.flush()
-            # Wait a bit between captures
-            time.sleep(3)
-        
-        # Send 'q' to quit
-        process.stdin.write('q\n')
-        process.stdin.flush()
-        
-        # Wait for process to finish
-        process.wait()
-        
+            # On Raspberry Pi, run each capture separately for stability
+            for i in range(num_items):
+                # Run the script for a single capture
+                script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'main.py')
+                
+                # Create a simple single-use script that automatically sends 'y' and then 'q'
+                capture_script = f"""
+import time
+import subprocess
+
+cmd = ["{sys.executable}", "{script_path}"]
+proc = subprocess.Popen(
+    cmd,
+    stdin=subprocess.PIPE,
+    stdout=subprocess.PIPE,
+    text=True
+)
+
+# Send 'y' to capture
+proc.stdin.write('y\\n')
+proc.stdin.flush()
+time.sleep(5)  # Wait for capture to complete
+
+# Send 'q' to quit
+proc.stdin.write('q\\n')
+proc.stdin.flush()
+proc.wait()
+                """
+                
+                # Write the script to a temp file
+                temp_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp_capture.py')
+                with open(temp_script_path, 'w') as f:
+                    f.write(capture_script)
+                
+                # Run the temp script
+                subprocess.run([sys.executable, temp_script_path], check=True)
+                
+                # Remove the temp script
+                try:
+                    os.remove(temp_script_path)
+                except:
+                    pass
+                
+                # Wait between captures
+                time.sleep(2)
+                
+                print(f"Completed capture {i+1} of {num_items}")
+                
     except Exception as e:
         print(f"Error running capture process: {e}")
     finally:
