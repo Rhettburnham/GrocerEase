@@ -35,7 +35,7 @@ def identify_food(image_path):
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": "Identify the food in 1-3 words, no description."},
+                    {"type": "text", "text": "Identify the food in 1-3 words, no full sentences."},
                     {"type": "image_url", "image_url": {"url": data_url}}
                 ],
             }
