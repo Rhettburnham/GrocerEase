@@ -130,9 +130,8 @@ function App() {
                 <div className="flex justify-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
-              ) : !loading && logEntries.length === 0 && !error ? (
-                 <p className="text-center text-gray-500 py-4">Your food log is empty. Add items using the FoodBot!</p>
               ) : (
+                /* Always render the FoodLogTable component, regardless of whether there are entries */
                 <FoodLogTable entries={logEntries} apiBaseUrl={apiBaseUrl} onRefresh={fetchLogEntries} />
               )}
             </>
