@@ -182,11 +182,14 @@ def start_capture():
     # Check if capture is already running
     if capture_running:
         return jsonify({"error": "Capture process already running"}), 400
-        
+    
+    # Get the number of items to capture (default to 1 for single capture)
+    num_items = request.json.get('num_items', 1) if request.is_json else 1
+    
     # Start capture process in a new thread
     capture_thread = threading.Thread(
         target=run_capture_process,
-        kwargs={"num_items": 7}
+        kwargs={"num_items": num_items}
     )
     capture_thread.daemon = True
     capture_thread.start()
