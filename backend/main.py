@@ -8,7 +8,7 @@ from hx711 import HX711
 from mimetypes import guess_type
 from statistics import mode, StatisticsError
 
-# Set your OpenAI API key directly
+# Set your OpenAI API key
 openai.api_key = "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"
 
 # --- Capture Image ---
@@ -30,7 +30,7 @@ def encode_image_to_data_url(image_path):
 def identify_food(image_path):
     data_url = encode_image_to_data_url(image_path)
     response = openai.ChatCompletion.create(
-        model="gpt-4-vision-preview",
+        model="gpt-4o",
         messages=[
             {
                 "role": "user",
@@ -42,7 +42,7 @@ def identify_food(image_path):
         ],
         max_tokens=10
     )
-    return response.choices[0].message.content.strip()
+    return response["choices"][0]["message"]["content"].strip()
 
 # --- Get Weight Mode ---
 def get_weight(duration_sec=2):
@@ -65,64 +65,44 @@ def get_weight(duration_sec=2):
 
 # --- Main Process ---
 def main():
-    # Keep track of the current capture count
-    capture_count = 0
-    
-    while True:
-        user_input = input("\nPress 'y' then Enter to capture and analyze item (or 'q' to quit)...\n")
-        
-        if user_input.lower() == 'q':
-            print("Exiting program.")
-            break
-            
-        if user_input.lower() != 'y':
-            print("Invalid input. Press 'y' to continue or 'q' to quit.")
-            continue
-        
-        # Increment capture count for filename
-        capture_count += 1
-        
-        # 1. Capture image with incrementing number
-        image_filename = f"capture{capture_count}.jpg"
-        image_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "images", image_filename)
-        
-        # Create images directory if it doesn't exist
-        os.makedirs(os.path.dirname(image_path), exist_ok=True)
-        
-        capture_image(image_path)
+    input("Press 'y' then Enter to capture and analyze item...\n")
 
-        # 2. Get weight
-        print("Measuring weight...")
-        weight = get_weight()
-        if weight is None:
-            print("No unique weight mode found.")
-            continue
-        print(f"Weight: {weight} g")
+    # 1. Capture image
+    image_path = "capture.jpg"
+    capture_image(image_path)
 
-        # 3. Identify item
-        print("Identifying item from image...")
-        item_name = identify_food(image_path)
-        print(f"Identified: {item_name}")
+    # 2. Get weight
+    print("Measuring weight...")
+    weight = get_weight()
+    if weight is None:
+        print("No unique weight mode found.")
+        return
+    print(f"Weight: {weight} g")
 
-        # 4. Save to JSON
-        output = {
-            "image_path": f"images/{image_filename}",
-            "item": item_name,
-            "weight": weight
-        }
+    # 3. Identify item
+    print("Identifying item from image...")
+    item_name = identify_food(image_path)
+    print(f"Identified: {item_name}")
 
-        json_path = "item_log.json"
-        if os.path.exists(json_path):
-            with open(json_path, "r") as file:
-                data = json.load(file)
-        else:
-            data = []
+    # 4. Save to JSON
+    output = {
+        "image_path": image_path,
+        "item": item_name,
+        "weight": weight
+    }
 
-        data.append(output)
-        with open(json_path, "w") as file:
-            json.dump(data, file, indent=4)
+    json_path = "item_log.json"
+    if os.path.exists(json_path):
+        with open(json_path, "r") as file:
+            data = json.load(file)
+    else:
+        data = []
 
-        print(f"Saved to item_log.json (capture #{capture_count})")
+    data.append(output)
+    with open(json_path, "w") as file:
+        json.dump(data, file, indent=4)
+
+    print("Saved to item_log.json")
 
 if __name__ == "__main__":
     main()
