@@ -1,0 +1,52 @@
+[
+  {
+    "image_path": "images/capture1.jpg",
+    "item": "Apple",
+    "weight": 156.2
+  },
+  {
+    "image_path": "images/capture2.jpg",
+    "item": "Banana",
+    "weight": 118.5
+  },
+  {
+    "image_path": "images/capture3.jpg",
+    "item": "Chicken Breast",
+    "weight": 245.3
+  },
+  {
+    "image_path": "images/capture4.jpg",
+    "item": "Broccoli",
+    "weight": 198.7
+  },
+  {
+    "image_path": "images/capture5.jpg",
+    "item": "Sweet Potato",
+    "weight": 312.4
+  },
+  {
+    "image_path": "images/capture6.jpg",
+    "item": "Salmon Fillet",
+    "weight": 175.9
+  },
+  {
+    "image_path": "images/capture7.jpg",
+    "item": "Avocado",
+    "weight": 201.8
+  },
+  {
+    "image_path": "images/capture8.jpg",
+    "item": "Brown Rice",
+    "weight": 126.3
+  },
+  {
+    "image_path": "images/capture9.jpg",
+    "item": "Spinach",
+    "weight": 87.5
+  },
+  {
+    "image_path": "images/capture10.jpg",
+    "item": "Yogurt",
+    "weight": 150.0
+  }
+] 

@@ -1,205 +1,134 @@
 import React, { useState, useEffect } from 'react'
-import { Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, Box, Spinner, Alert, AlertIcon, AlertTitle, AlertDescription, Button, Tabs, TabList, Tab, TabPanels, TabPanel, Heading, Text, List, ListItem, Tag } from '@chakra-ui/react' // Using Chakra UI for better layout
-
-// Helper function to render list items
-const renderList = (items) => {
-    if (!items || items.length === 0) return <Text fontSize="sm" color="gray.500">Not available.</Text>;
-    if (typeof items === 'string') return <Text>{items}</Text>; // Handle if API returns string instead of list
-    return (
-        <List spacing={1} styleType="disc" pl={5}>
-            {items.map((item, index) => (
-                <ListItem key={index}>{item}</ListItem>
-            ))}
-        </List>
-    );
-};
-
-// Helper function to render numbered list for instructions
-const renderInstructions = (items) => {
-    if (!items || items.length === 0) return <Text fontSize="sm" color="gray.500">Not available.</Text>;
-    if (typeof items === 'string') return <Text>{items}</Text>; // Handle if API returns string instead of list
-    return (
-        <List as="ol" spacing={2} styleType="decimal" pl={5}>
-            {items.map((item, index) => (
-                <ListItem key={index}>{item}</ListItem>
-            ))}
-        </List>
-    );
-};
 
 const RecipeSuggestions = ({ apiBaseUrl }) => {
-  // State: meal type tabs, recipes, loading, error
-  const [mealType, setMealType] = useState('any') // Default to 'any' or maybe 'breakfast'?
-  const [recipes, setRecipes] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeMealType, setActiveMealType] = useState(null);
 
-  const mealTypes = ['any', 'breakfast', 'lunch', 'dinner'];
-
-  // Fetch recipes function
-  const fetchRecipes = async (currentMealType) => {
-    setLoading(true)
-    setError(null)
-    setRecipes([]) // Clear previous recipes
-    console.log(`Fetching recipes for: ${currentMealType}`);
-    
+  const fetchRecipes = async (mealType) => {
     try {
-      // Fetch full recipes directly from the updated API endpoint
-      const response = await fetch(`${apiBaseUrl}/api/recipes?meal_type=${currentMealType}&num=3`)
+      setLoading(true);
+      setActiveMealType(mealType);
+      
+      const response = await fetch(`${apiBaseUrl}/api/recipes?meal_type=${mealType}&num_suggestions=3`);
       
       if (!response.ok) {
-        let errorMsg = `Failed to fetch recipes: ${response.statusText}`;
-         try {
-            const errData = await response.json();
-            // Use error message from backend if available
-            errorMsg = errData.error || errData.message || errorMsg;
-         } catch (e) { /* Ignore if response body is not JSON */ }
-        throw new Error(errorMsg)
+        throw new Error(`Server error: ${response.status}`);
       }
       
-      const data = await response.json()
-
-      // Check if the data itself contains an error message from the AI
-      if (Array.isArray(data) && data.length > 0 && data[0]?.error) {
-        throw new Error(data[0].error);
-      }
-      
-      // Ensure data is an array
-      if (!Array.isArray(data)) {
-        console.error("API did not return an array:", data);
-        throw new Error("Received unexpected data format from server.");
-      }
-
-      setRecipes(data)
-      
+      const data = await response.json();
+      setRecipes(data);
+      setLoading(false);
     } catch (err) {
-      console.error(`Error fetching recipes:`, err)
-      setError(`Failed to load recipes: ${err.message}. Please try again.`)
-    } finally {
-      setLoading(false)
+      console.error('Error fetching recipes:', err);
+      setError(err.message);
+      setLoading(false);
     }
-  }
-  
-  // Fetch recipes when the component mounts or mealType changes
-  useEffect(() => {
-    fetchRecipes(mealType)
-  }, [mealType, apiBaseUrl]) // Re-fetch if apiBaseUrl changes too
-
-  // Handle tab change
-  const handleTabsChange = (index) => {
-    setMealType(mealTypes[index]);
   };
 
+  const MealTypeButton = ({ type, label }) => (
+    <button
+      onClick={() => fetchRecipes(type)}
+      className={`px-4 py-2 rounded-md font-medium transition-colors ${
+        activeMealType === type 
+          ? 'bg-green-500 text-white' 
+          : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
-    <Box>
-      <Heading size="lg" mb={6}>Recipe Suggestions</Heading>
+    <div className="p-4 bg-white border border-gray-200 rounded-md shadow-sm">
+      <h2 className="text-xl font-semibold mb-4">Recipe Suggestions</h2>
       
-      {/* Meal Type Tabs */}
-      <Tabs index={mealTypes.indexOf(mealType)} onChange={handleTabsChange} mb={6} variant="soft-rounded" colorScheme="blue">
-        <TabList>
-          {mealTypes.map(type => (
-            <Tab key={type} textTransform="capitalize">{type}</Tab>
-          ))}
-        </TabList>
-      </Tabs>
-
-       {/* Refresh Button */} 
-       <Button 
-         mb={6}
-         onClick={() => fetchRecipes(mealType)} 
-         isLoading={loading} 
-         loadingText="Generating..."
-         colorScheme="blue"
-       >
-         Generate New Recipes
-       </Button>
-
-      {/* Loading State */}
+      <div className="flex gap-4 mb-6">
+        <MealTypeButton type="breakfast" label="Breakfast" />
+        <MealTypeButton type="lunch" label="Lunch" />
+        <MealTypeButton type="dinner" label="Dinner" />
+      </div>
+      
+      {!activeMealType && !loading && (
+        <div className="p-4 bg-blue-50 rounded-md">
+          <p className="text-gray-700">Select a meal type to see recipe suggestions based on your food log items.</p>
+        </div>
+      )}
+      
       {loading && (
-        <Box textAlign="center" py={10}>
-          <Spinner size="xl" />
-          <Text mt={4}>Generating recipe ideas...</Text>
-        </Box>
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        </div>
       )}
-
-      {/* Error Display */}
-      {error && !loading && (
-        <Alert status="error" mb={6} borderRadius="md">
-          <AlertIcon />
-          <Box>
-            <AlertTitle>Error!</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Box>
-        </Alert>
+      
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600">Error loading recipes: {error}</p>
+        </div>
       )}
-
-      {/* Recipe Results - Accordion */}
-      {!loading && !error && recipes.length > 0 && (
-        <Accordion allowMultiple>
+      
+      {activeMealType && !loading && recipes.length === 0 && (
+        <p className="text-gray-500">No recipe suggestions available for {activeMealType}. Try adding more food items.</p>
+      )}
+      
+      {!loading && recipes.length > 0 && (
+        <div className="space-y-6">
           {recipes.map((recipe, index) => (
-            // Skip rendering if recipe seems invalid or is an error placeholder
-            !recipe.error && recipe.name ? (
-              <AccordionItem key={index} borderTopWidth={index === 0 ? "1px" : undefined} borderBottomWidth="1px">
-                <h2>
-                  <AccordionButton _expanded={{ bg: 'blue.50', color: 'blue.800' }}>
-                    <Box flex="1" textAlign="left" fontWeight="semibold">
-                      {recipe.name || `Recipe Suggestion ${index + 1}`}
-                    </Box>
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel pb={4}>
-                  <Box mb={4}>
-                     <Heading size="sm" mb={2}>Description</Heading>
-                     <Text fontSize="sm">{recipe.introduction || "No description available."}</Text>
-                  </Box>
-
-                  <Box display="flex" gap={4} mb={4} flexWrap="wrap">
-                     {recipe.prepTime && <Tag size="md" variant='subtle' colorScheme='gray'>Prep: {recipe.prepTime}</Tag>}
-                     {recipe.cookTime && <Tag size="md" variant='subtle' colorScheme='gray'>Cook: {recipe.cookTime}</Tag>}
-                     {recipe.servings && <Tag size="md" variant='subtle' colorScheme='gray'>Servings: {recipe.servings}</Tag>}
-                  </Box>
-
-                  <Box mb={4}>
-                     <Heading size="sm" mb={2}>Ingredients</Heading>
-                     {renderList(recipe.ingredients)}
-                  </Box>
-                  
-                  <Box mb={4}>
-                     <Heading size="sm" mb={2}>Instructions</Heading>
-                     {renderInstructions(recipe.instructions)}
-                  </Box>
-
-                  {recipe.nutritionalInfo && (
-                      <Box mb={4}>
-                         <Heading size="sm" mb={2}>Nutritional Info</Heading>
-                         <Text fontSize="sm">{recipe.nutritionalInfo}</Text>
-                      </Box>
-                  )}
-
-                  {recipe.tips && (
-                       <Box>
-                         <Heading size="sm" mb={2}>Tips & Variations</Heading>
-                         <Text fontSize="sm">{recipe.tips}</Text>
-                       </Box>
-                  )}
-                </AccordionPanel>
-              </AccordionItem>
-            ) : null // Don't render item if name is missing or it's an error
+            <div key={index} className="p-4 bg-gray-50 rounded-md border border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">{recipe.name}</h3>
+              <p className="text-sm text-gray-600 mt-1 mb-3">{recipe.introduction}</p>
+              
+              <div className="flex flex-wrap gap-3 text-xs mb-3">
+                {recipe.prepTime && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                    Prep: {recipe.prepTime}
+                  </span>
+                )}
+                {recipe.cookTime && (
+                  <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
+                    Cook: {recipe.cookTime}
+                  </span>
+                )}
+                {recipe.servings && (
+                  <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
+                    Serves: {recipe.servings}
+                  </span>
+                )}
+              </div>
+              
+              <div className="mt-3">
+                <h4 className="text-md font-medium text-gray-800">Ingredients:</h4>
+                <ul className="list-disc pl-5 mt-1">
+                  {recipe.ingredients && recipe.ingredients.map((ingredient, i) => (
+                    <li key={i} className="text-sm text-gray-600">{ingredient}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              {recipe.instructions && (
+                <div className="mt-3">
+                  <h4 className="text-md font-medium text-gray-800">Instructions:</h4>
+                  <ol className="list-decimal pl-5 mt-1">
+                    {recipe.instructions.map((step, i) => (
+                      <li key={i} className="text-sm text-gray-600 mt-1">{step}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+              
+              {recipe.tips && (
+                <div className="mt-3 p-2 bg-yellow-50 rounded border border-yellow-100">
+                  <h4 className="text-sm font-medium text-gray-800">Tips:</h4>
+                  <p className="text-sm text-gray-600">{recipe.tips}</p>
+                </div>
+              )}
+            </div>
           ))}
-        </Accordion>
+        </div>
       )}
+    </div>
+  );
+};
 
-      {/* No Recipes Found Message */}
-      {!loading && !error && recipes.length === 0 && (
-        <Box textAlign="center" py={10} color="gray.500">
-          <Text>No recipes generated for "{mealType}".</Text>
-          <Text mt={2}>Try generating recipes again, or check the food log.</Text>
-        </Box>
-      )}
-    </Box>
-  )
-}
-
-export default RecipeSuggestions;
-// Removed previous complex state and logic for selecting ideas and generating full recipes separately. 
+export default RecipeSuggestions 

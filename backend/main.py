@@ -65,44 +65,64 @@ def get_weight(duration_sec=2):
 
 # --- Main Process ---
 def main():
-    input("Press 'y' then Enter to capture and analyze item...\n")
+    # Keep track of the current capture count
+    capture_count = 0
+    
+    while True:
+        user_input = input("\nPress 'y' then Enter to capture and analyze item (or 'q' to quit)...\n")
+        
+        if user_input.lower() == 'q':
+            print("Exiting program.")
+            break
+            
+        if user_input.lower() != 'y':
+            print("Invalid input. Press 'y' to continue or 'q' to quit.")
+            continue
+        
+        # Increment capture count for filename
+        capture_count += 1
+        
+        # 1. Capture image with incrementing number
+        image_filename = f"capture{capture_count}.jpg"
+        image_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "images", image_filename)
+        
+        # Create images directory if it doesn't exist
+        os.makedirs(os.path.dirname(image_path), exist_ok=True)
+        
+        capture_image(image_path)
 
-    # 1. Capture image
-    image_path = "capture.jpg"
-    capture_image(image_path)
+        # 2. Get weight
+        print("Measuring weight...")
+        weight = get_weight()
+        if weight is None:
+            print("No unique weight mode found.")
+            continue
+        print(f"Weight: {weight} g")
 
-    # 2. Get weight
-    print("Measuring weight...")
-    weight = get_weight()
-    if weight is None:
-        print("No unique weight mode found.")
-        return
-    print(f"Weight: {weight} g")
+        # 3. Identify item
+        print("Identifying item from image...")
+        item_name = identify_food(image_path)
+        print(f"Identified: {item_name}")
 
-    # 3. Identify item
-    print("Identifying item from image...")
-    item_name = identify_food(image_path)
-    print(f"Identified: {item_name}")
+        # 4. Save to JSON
+        output = {
+            "image_path": f"images/{image_filename}",
+            "item": item_name,
+            "weight": weight
+        }
 
-    # 4. Save to JSON
-    output = {
-        "image_path": image_path,
-        "item": item_name,
-        "weight": weight
-    }
+        json_path = "item_log.json"
+        if os.path.exists(json_path):
+            with open(json_path, "r") as file:
+                data = json.load(file)
+        else:
+            data = []
 
-    json_path = "item_log.json"
-    if os.path.exists(json_path):
-        with open(json_path, "r") as file:
-            data = json.load(file)
-    else:
-        data = []
+        data.append(output)
+        with open(json_path, "w") as file:
+            json.dump(data, file, indent=4)
 
-    data.append(output)
-    with open(json_path, "w") as file:
-        json.dump(data, file, indent=4)
-
-    print("Saved to item_log.json")
+        print(f"Saved to item_log.json (capture #{capture_count})")
 
 if __name__ == "__main__":
     main()

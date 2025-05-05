@@ -6,22 +6,62 @@ import Header from './components/Header'
 import TabNavigation from './components/TabNavigation'
 
 // Define the base URL for the API
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+// We'll check both ports 8000 and 8001
+const API_BASE_URL_OPTIONS = [
+  import.meta.env.VITE_API_BASE_URL,
+  'http://localhost:8000',
+  'http://localhost:8001'
+];
 
 function App() {
   const [logEntries, setLogEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('foodLog') // 'foodLog' or 'recipes'
+  const [apiBaseUrl, setApiBaseUrl] = useState('')
+  
+  // Function to test API endpoints and find working one
+  useEffect(() => {
+    const checkApiEndpoints = async () => {
+      for (const url of API_BASE_URL_OPTIONS) {
+        if (!url) continue;
+        
+        try {
+          const response = await fetch(`${url}/api/health`, { 
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            // Short timeout for quick check
+            signal: AbortSignal.timeout(2000)
+          });
+          
+          if (response.ok) {
+            console.log(`API endpoint working: ${url}`);
+            setApiBaseUrl(url);
+            return;
+          }
+        } catch (err) {
+          console.log(`API endpoint ${url} not available`);
+        }
+      }
+      
+      // If we get here, no endpoints worked
+      setApiBaseUrl(API_BASE_URL_OPTIONS[1]); // Default to localhost:8000
+      setError("Could not connect to API server. Make sure it's running.")
+    };
+    
+    checkApiEndpoints();
+  }, []);
   
   // Function to fetch log entries from the backend API
   const fetchLogEntries = async () => {
+    if (!apiBaseUrl) return;
+    
     try {
       setLoading(true)
       setError(null) // Clear previous errors
       
       // Fetch the data from the backend API endpoint
-      const response = await fetch(`${API_BASE_URL}/api/log`)
+      const response = await fetch(`${apiBaseUrl}/api/item-log`)
       if (!response.ok) {
         // Try to get error message from backend response
         let errorMsg = `HTTP error! status: ${response.status}`;
@@ -34,9 +74,7 @@ function App() {
         throw new Error(errorMsg)
       }
       const data = await response.json()
-      // Sort entries by timestamp, newest first
-      const sortedData = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      setLogEntries(sortedData)
+      setLogEntries(data)
 
     } catch (err) {
       console.error('Error fetching log entries:', err)
@@ -47,20 +85,16 @@ function App() {
     }
   }
   
-  // Fetch log entries on component mount and when the tab becomes active
+  // Fetch log entries when API base URL is determined and active tab is 'foodLog'
   useEffect(() => {
-    if (activeTab === 'foodLog') {
+    if (apiBaseUrl && activeTab === 'foodLog') {
         fetchLogEntries()
     }
-    // No dependency array needed if we only fetch when tab is active
-    // If we want polling, we'd need a different effect
-  }, [activeTab]) 
+  }, [apiBaseUrl, activeTab]) 
   
   // Function to handle tab changes
   const handleTabChange = (tab) => {
     setActiveTab(tab)
-    // Optionally clear error when changing tabs
-    // setError(null);
   }
   
   return (
@@ -99,12 +133,12 @@ function App() {
               ) : !loading && logEntries.length === 0 && !error ? (
                  <p className="text-center text-gray-500 py-4">Your food log is empty. Add items using the FoodBot!</p>
               ) : (
-                <FoodLogTable entries={logEntries} apiBaseUrl={API_BASE_URL} />
+                <FoodLogTable entries={logEntries} apiBaseUrl={apiBaseUrl} onRefresh={fetchLogEntries} />
               )}
             </>
           ) : (
             // Pass API base URL and trigger fetch from within the component
-            <RecipeSuggestions apiBaseUrl={API_BASE_URL} /> 
+            <RecipeSuggestions apiBaseUrl={apiBaseUrl} /> 
           )}
         </div>
       </main>

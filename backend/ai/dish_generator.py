@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Hardcoded API key for prototype
+API_KEY = "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"
+
 class RecipeSuggestor:
     def __init__(self, api_key=None):
         """
@@ -15,11 +18,8 @@ class RecipeSuggestor:
         Args:
             api_key (str, optional): OpenAI API key. If None, tries to get from environment.
         """
-        # Get API key from args or environment variable
-        self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
-        
-        if not self.api_key:
-            raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY environment variable or pass to constructor.")
+        # Hardcoded API key for prototype
+        self.api_key = API_KEY
         
         # Initialize the OpenAI client
         self.client = OpenAI(api_key=self.api_key)

@@ -1,156 +1,91 @@
-# FoodBot: Raspberry Pi Food-Weighing & Identification Robot
+# GrocerEase
 
-A smart device that captures photos, weighs food items, identifies them using AI vision, and logs everything in a web interface. Also suggests recipes based on available ingredients.
+A simple food logging system with frontend visualization.
 
-## Overview
+## System Overview
 
-FoodBot uses a Raspberry Pi with a camera, load cell, and a button to create a seamless food logging experience. Each time you press the button, the system:
+GrocerEase consists of two main components:
 
-1. Weighs the food item on the scale
-2. Takes a photo using the camera
-3. Analyzes the image using OpenAI Vision API to identify the food
-4. Logs the timestamp, food type, weight, and image
-5. Displays all entries in a responsive web interface
-6. Suggests recipes based on available ingredients
+1. **Backend**: A Python-based server and food logging script
+2. **Frontend**: A React web application that displays the food log
 
-## Hardware Requirements
+## Setup Instructions
 
-- Raspberry Pi 4 (Model B, 2GB+ RAM) running Raspberry Pi OS
-- Momentary push-button (connected to GPIO pin 17)
-- 5MP Arducam for Raspberry Pi (manual-focus M12 mount)
-- HX711 24-bit ADC + 20kg load cell kit
-- Solderless breadboard & jumper wires
-- Power supply for Raspberry Pi
+### Prerequisites
 
-## Wiring Diagram
+- Python 3.8 or higher
+- Node.js and npm
+- (Optional) Raspberry Pi with camera and HX711 scale
 
-Connect your hardware components as follows:
+### Backend Setup
 
-### HX711 Load Cell Connections:
-- HX711 VCC → Raspberry Pi 3.3V
-- HX711 GND → Raspberry Pi GND
-- HX711 DT → Raspberry Pi GPIO 5
-- HX711 SCK → Raspberry Pi GPIO 6
-- Load Cell connections to HX711:
-  - Red → E+
-  - Black → E-
-  - Green → A+
-  - White → A-
+1. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
 
-### Button Connection:
-- One terminal → Raspberry Pi GPIO 17
-- Other terminal → Raspberry Pi GND
+2. Install required Python packages:
+   ```
+   pip install -r requirements.txt
+   ```
 
-### Camera Connection:
-- Connect the camera module to the Raspberry Pi camera port
+3. Run the server (in one terminal):
+   ```
+   python server.py
+   ```
 
-## Software Installation
+4. Run the main logging script (in another terminal):
+   ```
+   python main.py
+   ```
 
-### 1. Clone the repository
+### Frontend Setup
 
-```bash
-git clone https://github.com/yourusername/foodbot.git
-cd foodbot
-```
+1. Navigate to the frontend directory:
+   ```
+   cd frontend
+   ```
 
-### 2. Run the setup script (creates necessary directories and files)
+2. Install Node.js dependencies:
+   ```
+   npm install
+   ```
 
-```bash
-chmod +x setup.sh
-./setup.sh
-```
+3. Start the development server:
+   ```
+   npm run dev
+   ```
 
-### 3. Set up Python environment
-
-```bash
-# Install required system packages
-sudo apt update
-sudo apt install -y python3-venv python3-dev libcamera-dev python3-libcamera
-
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install Python dependencies
-pip install RPi.GPIO hx711py openai flask flask-cors
-```
-
-### 4. Set up OpenAI API Key
-
-```bash
-# Set your OpenAI API key in the environment
-export OPENAI_API_KEY=your_api_key_here
-
-# For permanent setup, add to /etc/environment or .bashrc
-echo 'OPENAI_API_KEY=your_api_key_here' | sudo tee -a /etc/environment
-```
-
-### 5. Build the frontend
-
-```bash
-# Install Node.js and npm if not already installed
-curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Install frontend dependencies and build
-cd frontend
-npm install
-npm run build
-```
-
-### 6. Set up as a system service (optional)
-
-```bash
-# Edit the service file to update paths and API key
-nano foodbot.service
-
-# Copy the service file to systemd directory
-sudo cp foodbot.service /etc/systemd/system/
-
-# Enable and start the service
-sudo systemctl daemon-reload
-sudo systemctl enable foodbot
-sudo systemctl start foodbot
-```
-
-## Important Configuration Files
-
-This project includes several important configuration files that must be properly set up:
-
-- `.env`: Contains environment variables for OpenAI API keys and hardware configuration. A sample is provided in `.env.example`.
-- `foodbot.service`: The systemd service file for auto-starting the application. Update the paths to match your installation.
-- `requirements.txt`: Lists all Python dependencies.
-- The `data` directory structure with `images` subdirectory: Created automatically by the setup script.
+4. Open your browser and go to:
+   ```
+   http://localhost:5173
+   ```
 
 ## Usage
 
-### Calibrating the Scale
+1. With the backend server and frontend running, open the frontend in your browser.
+2. In the terminal running `main.py`, press 'y' and Enter to capture and log food items.
+3. The script will:
+   - Capture an image
+   - Measure the weight using the scale
+   - Identify the food in the image
+   - Log the data to item_log.json
 
-Before first use, you need to calibrate the scale with a known weight:
+## How It Works
 
-```bash
-cd backend
-python -m hardware.scale --calibrate
-```
+1. The `main.py` script:
+   - Captures images using Raspberry Pi camera
+   - Measures weight with HX711 load cell
+   - Identifies food items with OpenAI Vision
+   - Updates item_log.json
 
-Follow the on-screen instructions to place a known weight on the scale and enter its weight in grams.
+2. The `server.py` script:
+   - Serves the item_log.json to the frontend
+   - Serves captured images
 
-### Running Manually
-
-If you haven't set up the systemd service, you can run the application manually:
-
-```bash
-cd backend
-python main.py
-```
-
-### Using the FoodBot
-
-1. Place an item on the scale
-2. Press the button
-3. Wait for the processing (weight measurement, image capture, and AI identification)
-4. View the results in the web interface at `http://[raspberry-pi-ip]:5000`
-5. Browse recipe suggestions based on available ingredients
+3. The frontend:
+   - Displays the food log in a table format
+   - Shows food type, weight, and images
 
 ## Features
 

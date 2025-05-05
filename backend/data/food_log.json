@@ -1,0 +1,42 @@
+[
+  {
+    "food_type": "Apple",
+    "weight_grams": 156.2
+  },
+  {
+    "food_type": "Banana",
+    "weight_grams": 118.5
+  },
+  {
+    "food_type": "Chicken Breast",
+    "weight_grams": 245.3
+  },
+  {
+    "food_type": "Broccoli",
+    "weight_grams": 198.7
+  },
+  {
+    "food_type": "Sweet Potato",
+    "weight_grams": 312.4
+  },
+  {
+    "food_type": "Salmon Fillet",
+    "weight_grams": 175.9
+  },
+  {
+    "food_type": "Avocado",
+    "weight_grams": 201.8
+  },
+  {
+    "food_type": "Brown Rice",
+    "weight_grams": 126.3
+  },
+  {
+    "food_type": "Spinach",
+    "weight_grams": 87.5
+  },
+  {
+    "food_type": "Yogurt",
+    "weight_grams": 150.0
+  }
+]
